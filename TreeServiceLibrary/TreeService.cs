@@ -1,38 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TreeServiceLibrary.Models;
 
 namespace TreeServiceLibrary
 {
     public class TreeService<T>
     {
-        private TreeDirection        _direction;
-        private IBuildTreeService<T> _service;
-
-        public TreeDirection Direction
-        {
-            get => _direction;
-            set
-            {
-                _direction = value;
-
-                _service = _direction switch
-                           {
-                               TreeDirection.TopDown  => new BuildTreeTopDownService<T>(),
-                               TreeDirection.BottomUp => new BuildTreeBottomUpService<T>(),
-                               _                      => throw new ArgumentOutOfRangeException(),
-                           };
-            }
-        }
-
         /// <summary>
-        /// 根節點
+        /// 最底部所有節點
         /// </summary>
-        public List<TreeNode<T>> RootNodes => _service.RootNodes;
+        public List<TreeNode<T>> RootNodes => _nodes.Values.Where(n => n.PrevNodes.Count == 0).ToList();
+
+        public List<TreeNode<T>> EndNodes => _nodes.Values.Where(n => n.NextNodes.Count == 0).ToList();
 
         public void Insert(T current, T next)
         {
-            _service.Insert(current, next);
+            var currentNode = Insert(current);
+            var upperNode   = Insert(next);
+
+            currentNode.NextNodes.Add(upperNode);
+            upperNode.PrevNodes.Add(currentNode);
+        }
+
+        /// <summary>
+        /// 攤平的所有節點
+        /// </summary>
+        private Dictionary<T, TreeNode<T>> _nodes = new();
+
+        private TreeNode<T> Insert(T v)
+        {
+            if (_nodes.GetValueOrDefault(v) is TreeNode<T> node)
+            {
+                return node;
+            }
+
+            var newNode = new TreeNode<T> { Value = v };
+            _nodes.Add(newNode.Value, newNode);
+
+            return newNode;
         }
     }
 }

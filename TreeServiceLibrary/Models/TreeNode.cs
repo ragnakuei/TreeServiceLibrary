@@ -1,11 +1,13 @@
+using System.Collections.Generic;
+
 namespace TreeServiceLibrary.Models
 {
     public class TreeNode<T>
     {
         public T Value { get; set; }
 
-        public TreeNode<T> Upper { get; set; }
+        public List<TreeNode<T>> NextNodes { get; init; } = new();
 
-        public TreeNode<T> Lower { get; set; }
+        public List<TreeNode<T>> PrevNodes { get; init; } = new();
     }
 }
